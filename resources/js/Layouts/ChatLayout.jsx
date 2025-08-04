@@ -1,3 +1,6 @@
+import ConversationItem from "@/Components/App/ConversationItem";
+import TextInput from "@/Components/TextInput";
+import { PencilSquareIcon } from "@heroicons/react/24/solid";
 import { usePage } from "@inertiajs/react";
 import { useEffect, useState } from "react";
 
@@ -12,8 +15,8 @@ export default function ChatLayout({ children, header }) {
 
     const isUserOnline = (userId) => onlineUsers[userId];
 
-    console.log("conversations", conversations);
-    console.log("selectedConversation", selectedConversation);
+    // console.log("conversations", conversations);
+    // console.log("selectedConversation", selectedConversation);
 
     function onSearch(ev) {
         const search = ev.target.value.toLowerCase();
@@ -25,30 +28,30 @@ export default function ChatLayout({ children, header }) {
     }
 
     useEffect(() => {
-        setSortedConversations(
-            localConversation.sort((a, b) => {
-                if (a.blocked_at && b.blocked_at) {
-                    return a.blocked_at > b.blocked_at ? 1 : -1;
-                } else if (a.blocked_at) {
-                    return 1;
-                } else if (b.blocked_at) {
-                    return -1;
-                }
+        if (!localConversation) return;
 
-                if (a.last_message_date && b.last_message_date) {
-                    return b.last_message_date.localeCompare(
-                        a.last_message_date
-                    );
-                } else if (a.last_message_date) {
-                    return -1;
-                } else if (b.last_message_date) {
-                    return 1;
-                } else {
-                    return 0;
-                }
-            })
-        );
-    }, []);
+        const sorted = [...localConversation].sort((a, b) => {
+            if (a.blocked_at && b.blocked_at) {
+                return a.blocked_at > b.blocked_at ? 1 : -1;
+            } else if (a.blocked_at) {
+                return 1;
+            } else if (b.blocked_at) {
+                return -1;
+            }
+
+            if (a.last_message_date && b.last_message_date) {
+                return b.last_message_date.localeCompare(a.last_message_date);
+            } else if (a.last_message_date) {
+                return -1;
+            } else if (b.last_message_date) {
+                return 1;
+            } else {
+                return 0;
+            }
+        });
+
+        setSortedConversations(sorted);
+    }, [localConversation]);
 
     useEffect(() => {
         setLocalConversation(conversations);
@@ -92,12 +95,12 @@ export default function ChatLayout({ children, header }) {
         <>
             <div className="flex flex-1 w-full overflow-hidden">
                 <div
-                    className={`transition-all w-full sm:w-[220px] md:w-[300px] bg-slate-800 flex flex-col overflow-hidden ${
-                        selectedConversation ? "-ml-[100%]" : ""
-                    }`}
+                    className={`transition-all w-full sm:w-[220px] md:w-[300px] bg-slate-800 flex flex-col overflow-hidden
+                        ${selectedConversation ? "md:ml-0 -ml-[100%]" : ""}
+                    `}
                 >
                     {/* title */}
-                    <div className="flex items-center justify-between py-2 px-3 text-xl font-medium">
+                    <div className="flex items-center justify-between py-2 px-3 text-md font-medium">
                         My Conversations
                         <div
                             className="tooltip tooltip-left"
@@ -129,9 +132,7 @@ export default function ChatLayout({ children, header }) {
                                             : "user_"
                                     }${conversation.id}`}
                                     conversation={conversation}
-                                    online={
-                                        !!isUserOnline(conversation.user_id)
-                                    }
+                                    online={!!isUserOnline(conversation.id)}
                                     selectedConversation={selectedConversation}
                                 />
                             ))}
